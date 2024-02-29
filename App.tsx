@@ -99,3 +99,4 @@ const styles = StyleSheet.create({
     fontWeight:'bold',
   },
 });
+//https://stackoverflow.com/questions/75314418/the-legacy-expo-cli-does-not-support-node-17
