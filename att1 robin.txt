@@ -1,0 +1,49 @@
+WITH MesesPorAno AS (
+    SELECT 
+        MONTH(DataPedido) AS mes,
+        YEAR(DataPedido) AS ano,
+        SUM(ValorLiquido) AS total_por_mes
+    FROM 
+        Venda
+    GROUP BY 
+        MONTH(DataPedido),
+        YEAR(DataPedido)
+),
+TodosMeses AS (
+    SELECT DISTINCT
+        mes,
+        ano,
+		total_por_mes
+    FROM 
+        MesesPorAno
+),
+MesesComCrescimento AS (
+    SELECT 
+        TM1.ano AS ano_inicial,
+        TM1.mes AS mes_inicial,
+        ISNULL(TM1.total_por_mes, 0) AS total_inicial,
+        TM2.ano AS ano_final,
+        TM2.mes AS mes_final,
+        ISNULL(TM2.total_por_mes, 0) AS total_final,
+        CASE 
+            WHEN ISNULL(TM1.total_por_mes, 0) = 0 THEN '0%'
+            ELSE FORMAT((ISNULL(TM2.total_por_mes, 0) - ISNULL(TM1.total_por_mes, 0)) / NULLIF(ISNULL(TM1.total_por_mes, 0), 0) * 100, '0.0%')
+        END AS crescimento_percentual
+    FROM 
+        TodosMeses TM1
+    LEFT JOIN 
+        MesesPorAno TM2 ON TM1.mes = TM2.mes AND TM1.ano + 1 = TM2.ano
+)
+SELECT 
+    mes_inicial,
+    ano_inicial,
+    total_inicial,
+    mes_final,
+    ano_final,
+    total_final,
+    crescimento_percentual
+FROM 
+    MesesComCrescimento
+ORDER BY 
+    ano_inicial,
+    mes_inicial;
